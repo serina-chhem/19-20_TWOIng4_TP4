@@ -5,9 +5,13 @@ var _ = require('lodash');
 var router = express.Router();
 
 
+const apiKey = "794e1084";
+const apiUrl = "http://www.omdbapi.com/";
+
+
 let movies = [
 	{
-		id: "tt3896198",
+		id: _.uniqueId(),
 		movie: "Guardians of the Galaxy Vol. 2",
 		yearOfRelease: 2017,
 		duration: 136, // en minutes,
@@ -20,7 +24,7 @@ let movies = [
 
 	{
 
-		id: "tt5817168",
+		id: _.uniqueId(),
 		movie: "Inception",
 		yearOfRelease: 2010,
 		duration: 148, // en minutes,
@@ -33,7 +37,7 @@ let movies = [
 
 	{
 
-		id: "tt0848228",
+		id: _.uniqueId(),
 		movie: "The Avengers",
 		yearOfRelease: 2012,
 		duration: 143, // en minutes,
@@ -46,7 +50,7 @@ let movies = [
 	
 	{
 
-		id: "tt0780504",
+		id: _.uniqueId(),
 		movie: "Drive",
 		yearOfRelease: 2011,
 		duration: 100, // en minutes,
@@ -61,39 +65,35 @@ let movies = [
 
 
 /* PUT movie by name. */
-router.put('/',(req, res)=>{
+router.put('/', (req, res) => {
 	const { movie } = req.body;
-
-	axios({
-
-		method: 'put',
-		url:'/movies',
-		baseURL: 'http://www.omdbapi.com/'
-
-
-	});
-
-
-
-
-
 	const id = _.uniqueId();
-	movies.push({ movie, id });
-	res.json({
-		message: 'Just added ${movie}',
-		movie: 
-		{
-			id,
-			movie, 
-			yearOfRelease, 
-			duration, 
-			actors,
-			poster,  
-			boxOffice, 
-			rottenTomatoesScore
-		}
-	})
-})
+
+	axios.get(`${apiUrl}?t=${movie}&apikey=${apiKey}`)
+		.then((response) => {
+
+			const id = _.uniqueId();
+			const movie = {
+				id: id,
+				movie: response.data.Title,
+				yearOfRelease: response.data.Released,
+				duration: response.data.Runtime,
+				actors: response.data.Actors,
+				poster: response.data.Poster,
+				boxOffice: response.data.BoxOffice,
+				rottenTomatoesScore: response.data.Ratings[2].Value,
+			}
+
+			movies.push(movie);
+
+			res.json({movie});
+		})
+		.catch(console.error);
+
+
+});
+
+
 
 
 
