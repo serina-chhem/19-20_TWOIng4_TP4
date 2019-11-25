@@ -60,21 +60,47 @@ let movies = [
 		rottenTomatoesScore: 92
 
 	},
+	{
+		id: _.uniqueId(),
+		movie: "Cinderella",
+		yearOfRelease: 2015,
+		duration: 105,
+		actors: "Cate Blanchett, Lily James, Richard Madden, Helena Bonham Carter",
+		poster: "https://m.media-amazon.com/images/M/MV5BMjMxODYyODEzN15BMl5BanBnXkFtZTgwMDk4OTU0MzE@._V1_SX300.jpg",
+		boxOffice: 183327144,
+		rottenTomatoesScore: 67
+	},
 
 ]
 
 
-/* PUT movie by name. */
+/* GET movie by ID. */
+router.get('/:id', (req, res) => {
+
+	const { id } = req.params;
+	const movie = _.find(movies, ["id", id]);
+	res.status(200).json({
+		message: `Movie found !`,
+		movie: { movie }
+	});
+
+});
+
+/* GET movies listing. */
+router.get('/', function(req, res, next) {
+	res.status(200).json({ movies });
+});
+
+
+/* PUT movie by name in POSTMAN body. */
 router.put('/', (req, res) => {
 	const { movie } = req.body;
-	const id = _.uniqueId();
 
 	axios.get(`${apiUrl}?t=${movie}&apikey=${apiKey}`)
 		.then((response) => {
 
-			const id = _.uniqueId();
 			const movie = {
-				id: id,
+				id: _.uniqueId(),
 				movie: response.data.Title,
 				yearOfRelease: response.data.Released,
 				duration: response.data.Runtime,
@@ -86,34 +112,56 @@ router.put('/', (req, res) => {
 
 			movies.push(movie);
 
-			res.json({movie});
+			res.json({
+				message: `Database updated : `,
+				movie: {movies},
+			});
+		})
+		.catch(console.error);
+});
+
+
+
+/* POST movie by ID. */
+router.post('/:id', (req, res) => {
+
+
+	const { id } = req.params;
+	const { title } = req.body;
+	const movieToUpdate = _.find(movies, ["id", id]);
+
+	
+	axios.get(`${apiUrl}?t=${title}&apikey=${apiKey}`)
+		.then((response) => {
+
+			movieToUpdate.movie = response.data.Title;
+			movieToUpdate.yearOfRelease = response.data.Released;
+			movieToUpdate.duration = response.data.Runtime;
+			movieToUpdate.actors = response.data.Actors;
+			movieToUpdate.poster = response.data.Poster;
+			movieToUpdate.boxOffice = response.data.BoxOffice;
+			movieToUpdate.rottenTomatoesScore = response.data.Ratings[2].Value;
+
+			const movie = {
+				id: id,
+				movie: movieToUpdate.movie,
+				yearOfRelease: movieToUpdate.yearOfRelease,
+				duration: movieToUpdate.duration,
+				actors: movieToUpdate.actors,
+				poster: movieToUpdate.poster,
+				boxOffice: movieToUpdate.boxOffice,
+				rottenTomatoesScore: movieToUpdate.rottenTomatoesScore,
+			}
+
+			res.json({ 
+				message: `Just updated movie ${id} ! `,
+				movie:{movie},
+			 });
 		})
 		.catch(console.error);
 
 
 });
-
-
-
-
-
-/* GET movie by ID. */
-router.get('/:id', (req, res)=>{
-
-	const { id } = req.params;
-	const movie = _.find(movies, ["id", id]);
-	res.status(200).json({
-		message: 'Movie found !',
-		movie
-	});
-
-});
-
-/* GET movies listing. */
-router.get('/', function(req, res, next) {
-	res.status(200).json({ movies });
-});
-
 
 
 
