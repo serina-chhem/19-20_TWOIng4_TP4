@@ -114,7 +114,8 @@ router.put('/', (req, res) => {
 
 			res.json({
 				message: `Database updated : `,
-				movie: {movies},
+				database: { movies },
+			
 			});
 		})
 		.catch(console.error);
@@ -154,12 +155,21 @@ router.post('/:id', (req, res) => {
 			}
 
 			res.json({ 
-				message: `Just updated movie ${id} ! `,
-				movie:{movie},
+				message: `Just updated movie ${id} : `,
+				movie: {movie},
 			 });
 		})
 		.catch(console.error);
+});
 
+router.delete('/:id', (req, res) =>{
+
+	const { id } = req.params;
+	_.remove(movies, ["id", id]);
+	res.json({
+		message: `Just removed movie ${id} ! New database :`,
+		database :{movies},
+	})
 
 });
 
